@@ -1,98 +1,56 @@
-//source used: assistance from ChatGPT
-
 #include <iostream>
-#include <vector>
-#include <thread>
+#include <pthread.h>
+#include <sstream>
 #include <atomic>
 #include <sstream>
 
-//global variables
-std::vector<std::string> words;  //vector that stores words
-std::atomic<size_t> currentIndex(0);  //global index for current word being processed
-std::atomic<bool> done(false);  //flag to signal threads to exit
+std::string input;
+int currentThread = 1;
+bool printAlpha = true;
+std::atomic<bool> done(false);
 
-//function to process words starting with an alphabet
-void alpha() 
-{
-    while (!done) 
-    {
-        std::string currentWord;
-        size_t localIndex;
 
-        //atomically load and increment the currentIndex
-        localIndex = currentIndex.fetch_add(1);
-
-        if (localIndex < words.size()) 
-        {
-            currentWord = words[localIndex];
-
-            if (isalpha(currentWord[0])) 
-            {
-                std::cout << "alpha: " << currentWord << std::endl;
-            }
-        }
-    }
+auto numeric(const std::string& word) {
+    return !word.empty() && isdigit(word[0]);
 }
 
-//function to process words starting with a number
-void numeric() 
-{
-    while (!done) 
-    {
-        std::string currentWord;
-        size_t localIndex;
-
-        //atomically load and increment the currentIndex
-        localIndex = currentIndex.fetch_add(1);
-
-        if (localIndex < words.size()) 
-        {
-            currentWord = words[localIndex];
-
-            if (isdigit(currentWord[0])) 
-            {
-                std::cout << "numeric: " << currentWord << std::endl;
-            }
-        }
-    }
+auto alpha(const std::string& word) {
+    return !word.empty() && isalpha(word[0]);
 }
-
-int main(int argc, char *argv[]) 
-{
-    //read phrase from command line or user input
-    std::string inputPhrase;
-
-    if (argc > 1) 
-    {
-        //read from command line argument
-        inputPhrase = argv[1];
-    } 
-    else 
-    {
-        //read from user input
-        std::cout << "Enter string: ";
-        std::getline(std::cin, inputPhrase);
-    }
-
-    //split the input phrase into words
-    std::istringstream iss(inputPhrase);
+void* checker(void* s1) {
+    int threadId = *(int*)s1;
+    std::istringstream iss(input);
     std::string word;
 
-    while (iss >> word) 
-    {
-        words.push_back(word);
+    while (iss >> word) {
+        while ((threadId == 1 && !printAlpha) || (threadId == 2 && printAlpha)) {
+        }
+        if ((threadId == 1 && alpha(word)) || (threadId == 2 && numeric(word))) {
+            std::cout << (threadId == 1 ? "alpha: " : "numeric: ") << word << std::endl;
+        }
+        printAlpha = !printAlpha;
+        currentThread = (threadId == 1) ? 2 : 1;
     }
+    pthread_exit(NULL);
+}
 
-    //create threads
-    std::thread alphaThread(alpha);
-    std::thread numericThread(numeric);
+int main() {
+    pthread_t p1, p2;
 
-    //wait for threads to finish
-    alphaThread.join();
-    numericThread.join();
+    int alphaThreadId = 1;
+    int numericThreadId = 2;
 
-    //set the flag to signal threads to exit
-    done = true;
+    std::cout << "Enter String: ";
+    std::getline(std::cin, input);
+    std::cout << "\n----------------------------------\n";
 
+    pthread_create(&p1, NULL, checker, &alphaThreadId);
+    pthread_create(&p2, NULL, checker, &numericThreadId);
+
+    pthread_join(p1, NULL);
+    pthread_join(p2, NULL);
+
+
+    std::cout << "----------------------------------\n";
     return 0;
 }
