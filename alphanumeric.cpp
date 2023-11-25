@@ -9,14 +9,17 @@ int currentThread = 1;
 bool printAlpha = true;
 std::atomic<bool> done(false);
 
-
+// check if word in string is numeric
 auto numeric(const std::string& word) {
     return !word.empty() && isdigit(word[0]);
 }
 
+// check if word in string is alpha
 auto alpha(const std::string& word) {
     return !word.empty() && isalpha(word[0]);
 }
+
+// thread checker
 void* checker(void* s1) {
     int threadId = *(int*)s1;
     std::istringstream iss(input);
