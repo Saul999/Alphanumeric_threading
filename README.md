@@ -1,9 +1,9 @@
 # Alphanumeric threading
 
-#Description
+# Description
 By using 2 different threads, separate an input by words and numbers.
 
-#Goals
+# Goals
 
 Goal 1: From the terminal, the program should read the phrase. This phrase should be saved into a global variable. (done)
 
