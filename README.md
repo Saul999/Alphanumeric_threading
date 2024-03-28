@@ -1,7 +1,7 @@
-# Alphanumeric threading
+# Multithreading Phrase Analysis
 
 # Description
-By using 2 different threads, separate an input by words and numbers.
+The Multithreaded Phrase Analysis Program is designed to read a phrase from the terminal, split it into words, and analyze each word concurrently using two separate threads. The program distinguishes between words starting with alphabets and those starting with numbers, printing them accordingly. To ensure thread safety and prevent race conditions, the program employs C++ language constructs such as locks.
 
 # Goals
 
